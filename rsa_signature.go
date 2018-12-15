@@ -12,6 +12,8 @@ import (
 	"errors"
 )
 
+// Sign returns base64 encoded SignPKCS1v15 signature
+// using RSASSA-PKCS1-V1_5-SIGN from RSA PKCS#1 v1.5
 func Sign(privateKeyPEM, bytesToSign []byte) (string, error) {
 	privateKey, err := DecodePrivateKeyPEM(privateKeyPEM)
 	if err != nil {
@@ -34,6 +36,7 @@ func Sign(privateKeyPEM, bytesToSign []byte) (string, error) {
 	return base64.StdEncoding.EncodeToString(signature), nil
 }
 
+// Verify verifies an RSA PKCS#1 v1.5 signature
 func Verify(publicKeyPEM []byte, signature string, signed []byte) (bool, error) {
 	publicKey, err := DecodePublicKeyPEM(publicKeyPEM)
 	if err != nil {
@@ -63,6 +66,7 @@ func Verify(publicKeyPEM []byte, signature string, signed []byte) (bool, error) 
 	return true, nil
 }
 
+// DecodePublicKeyPEM decodes RSA PKCS#1 v1.5 public key
 func DecodePublicKeyPEM(publicKeyPEM []byte) (*rsa.PublicKey, error) {
 	block, _ := pem.Decode(publicKeyPEM)
 	if block == nil || block.Type != "PUBLIC KEY" {
@@ -71,6 +75,7 @@ func DecodePublicKeyPEM(publicKeyPEM []byte) (*rsa.PublicKey, error) {
 	return x509.ParsePKCS1PublicKey(block.Bytes)
 }
 
+// DecodePrivateKeyPEM decodes RSA PKCS#1 v1.5 private key
 func DecodePrivateKeyPEM(privateKeyPEM []byte) (*rsa.PrivateKey, error) {
 	block, _ := pem.Decode(privateKeyPEM)
 	if block == nil || block.Type != "RSA PRIVATE KEY" {
@@ -79,6 +84,7 @@ func DecodePrivateKeyPEM(privateKeyPEM []byte) (*rsa.PrivateKey, error) {
 	return x509.ParsePKCS1PrivateKey(block.Bytes)
 }
 
+// EncodePublicKeyPEM encodes RSA PKCS#1 v1.5 public key
 func EncodePublicKeyPEM(publicKey *rsa.PublicKey) ([]byte, error) {
 	publicKeyPEM := bytes.NewBuffer([]byte{})
 	err := pem.Encode(publicKeyPEM, &pem.Block{
@@ -91,6 +97,7 @@ func EncodePublicKeyPEM(publicKey *rsa.PublicKey) ([]byte, error) {
 	return publicKeyPEM.Bytes(), nil
 }
 
+// EncodePrivateKeyPEM encodes RSA PKCS#1 v1.5 private key
 func EncodePrivateKeyPEM(privateKey *rsa.PrivateKey) ([]byte, error) {
 	privateKeyPEM := bytes.NewBuffer([]byte{})
 	err := pem.Encode(privateKeyPEM, &pem.Block{
