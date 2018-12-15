@@ -1,0 +1,26 @@
+sudo: false
+language: go
+go:
+- "1.9.x"
+- "1.10.x"
+- "1.11.x"
+before_script:
+- |
+  go get -v -u \
+         github.com/client9/misspell/cmd/misspell \
+         github.com/fzipp/gocyclo \
+         github.com/golang/lint/golint \
+         github.com/gordonklaus/ineffassign \
+         github.com/kisielk/errcheck \
+         github.com/mdempsky/unconvert
+script:
+- go clean ./...
+- golint -set_exit_status ./...
+- go vet ./...
+- errcheck -verbose -asserts ./...
+- unconvert -v .
+- gocyclo -over 40 ./
+- ineffassign ./
+- misspell -error ./* ./*/* ./*/*/* ./*/*/*/* ./*/*/*/*/* ./*/*/*/*/*/* ./*/*/*/*/*/*/*
+- go test -v ./...
+- go test -race ./...
