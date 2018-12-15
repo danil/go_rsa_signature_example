@@ -9,7 +9,7 @@ steps:
   image: golang:1.11
   pull: true
   commands:
-  - go get -u bitbucket.org/danil/go_rsa_signaturea
+  - go get -u github.com/danil/go_rsa_signature
   - go get -u github.com/client9/misspell/cmd/misspell
   - go get -u github.com/fzipp/gocyclo
   - go get -u github.com/golang/lint/golint

@@ -5,7 +5,7 @@ import (
 	"crypto/rsa"
 	"testing"
 
-	rsasignature "bitbucket.org/danil/go_rsa_signature_example"
+	rsasignature "github.com/danil/go_rsa_signature_example"
 )
 
 var testCases = []struct {
