@@ -16,7 +16,7 @@ import (
 	"strings"
 )
 
-// Sign returns base64 encoded SignPKCS1v15 signature
+// Sign returns base64 encoded signature
 // using RSASSA-PKCS1-V1_5-SIGN from RSA PKCS#1 v1.5
 func Sign(privateKeyPEM, bytesToSign []byte) (string, error) {
 	privateKey, err := DecodePrivateKeyPEM(privateKeyPEM)
@@ -36,25 +36,19 @@ func Sign(privateKeyPEM, bytesToSign []byte) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	// return hex.EncodeToString(signature), nil
 	return base64.StdEncoding.EncodeToString(signature), nil
 }
 
 // Verify verifies an RSA PKCS#1 v1.5 signature
 func Verify(publicKeyPEM []byte, signature string, signed []byte) (bool, error) {
-	publicKey, err := DecodePublicKeyPKIXPEM(publicKeyPEM)
+	publicKey, err := DecodePKIXPublicKeyPEM(publicKeyPEM)
 	if err != nil {
 		return false, err
 	}
-	// a, err := hex.DecodeString(signature)
-	// if err == rsa.ErrVerification {
-	// 	return false, err
-	// }
 	a, err := base64.StdEncoding.DecodeString(signature)
 	if err != nil {
 		return false, err
 	}
-	// fmt.Println(base64.StdEncoding.EncodeToString(a))
 	// Only small messages can be signed directly; thus the hash of a
 	// message, rather than the message itself, is signed. This requires
 	// that the hash function be collision resistant. SHA-256 is the
@@ -70,17 +64,8 @@ func Verify(publicKeyPEM []byte, signature string, signed []byte) (bool, error) 
 	return true, nil
 }
 
-// DecodePublicKeyPEM decodes RSA PKCS#1 v1.5 public key
-func DecodePublicKeyPEM(publicKeyPEM []byte) (*rsa.PublicKey, error) {
-	block, _ := pem.Decode(publicKeyPEM)
-	if block == nil || !strings.Contains(block.Type, "PUBLIC KEY") {
-		return nil, errors.New("failed to decode PEM block containing public key")
-	}
-	return x509.ParsePKCS1PublicKey(block.Bytes)
-}
-
-// DecodePublicKeyPKIXPEM decodes DER encoded RSA public key PEM
-func DecodePublicKeyPKIXPEM(publicKeyPEM []byte) (*rsa.PublicKey, error) {
+// DecodePKIXPublicKeyPEM decodes DER encoded RSA public key PEM
+func DecodePKIXPublicKeyPEM(publicKeyPEM []byte) (*rsa.PublicKey, error) {
 	block, _ := pem.Decode(publicKeyPEM)
 	if block == nil || !strings.Contains(block.Type, "PUBLIC KEY") {
 		return nil, errors.New("failed to decode PEM block containing public key")
@@ -94,9 +79,9 @@ func DecodePublicKeyPKIXPEM(publicKeyPEM []byte) (*rsa.PublicKey, error) {
 	case *rsa.PublicKey:
 		rsaPublicKey = v
 	case *dsa.PublicKey:
-		return nil, fmt.Errorf("public key is of type DSA: %v", v)
+		return nil, fmt.Errorf("unexpected public key type DSA: %v", v)
 	case *ecdsa.PublicKey:
-		return nil, fmt.Errorf("public key is of type ECDSA: %v", v)
+		return nil, fmt.Errorf("unexpected public public key type ECDSA: %v", v)
 	default:
 		return nil, errors.New("unknown type of public key")
 	}
@@ -112,29 +97,16 @@ func DecodePrivateKeyPEM(privateKeyPEM []byte) (*rsa.PrivateKey, error) {
 	return x509.ParsePKCS1PrivateKey(block.Bytes)
 }
 
-// EncodePublicKeyPEM encodes RSA PKCS#1 v1.5 public key
-func EncodePublicKeyPEM(publicKey *rsa.PublicKey) ([]byte, error) {
-	publicKeyPEM := bytes.NewBuffer([]byte{})
-	err := pem.Encode(publicKeyPEM, &pem.Block{
-		Type:  "PUBLIC KEY",
-		Bytes: x509.MarshalPKCS1PublicKey(publicKey),
-	})
-	if err != nil {
-		return nil, err
-	}
-	return publicKeyPEM.Bytes(), nil
-}
-
 // EncodePKIXPublicKeyPEM serialises a public key to DER-encoded PKIX format
 func EncodePKIXPublicKeyPEM(publicKey *rsa.PublicKey) ([]byte, error) {
-	PublicKeyASN1, err := x509.MarshalPKIXPublicKey(publicKey)
+	publicKeyASN1, err := x509.MarshalPKIXPublicKey(publicKey)
 	if err != nil {
 		return nil, err
 	}
 	publicKeyPEM := bytes.NewBuffer([]byte{})
 	err = pem.Encode(publicKeyPEM, &pem.Block{
 		Type:  "RSA PUBLIC KEY",
-		Bytes: PublicKeyASN1,
+		Bytes: publicKeyASN1,
 	})
 	if err != nil {
 		return nil, err

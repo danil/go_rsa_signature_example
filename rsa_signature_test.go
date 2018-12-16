@@ -121,10 +121,6 @@ func TestSignature(t *testing.T) {
 						t.Fatal(err, linkToExample)
 					}
 				}
-				// tc.public, err = rsasignature.EncodePublicKeyPEM(&privateKey.PublicKey)
-				// if err != nil {
-				// 	t.Fatal(err, linkToExample)
-				// }
 				tc.public, err = rsasignature.EncodePKIXPublicKeyPEM(&privateKey.PublicKey)
 				if err != nil {
 					t.Fatal(err, linkToExample)
